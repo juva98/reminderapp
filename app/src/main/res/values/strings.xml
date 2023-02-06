@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">reminderapp</string>
+    <string name="search">Search</string>
+    <string name="account">Account</string>
+    <string name="check_mark">Check</string>
+    <string name="log_out">Log Out</string>
+    <string name="tutorial">Tutorial</string>
+</resources>
