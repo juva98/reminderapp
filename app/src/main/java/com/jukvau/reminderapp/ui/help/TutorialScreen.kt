@@ -40,7 +40,7 @@ fun TutorialScreen(
                         contentDescription = null
                     )
                 }
-                Text(text = "Profile")
+                Text(text = "Tutorial")
             }
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
