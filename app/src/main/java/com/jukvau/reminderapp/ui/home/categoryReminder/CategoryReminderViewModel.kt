@@ -2,38 +2,34 @@ package com.jukvau.reminderapp.ui.home.categoryReminder
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.jukvau.reminderapp.data.entity.Reminder
+import com.jukvau.reminderapp.Graph
+import com.jukvau.reminderapp.data.repository.ReminderRepository
+import com.jukvau.reminderapp.data.room.ReminderToCategory
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import java.util.*
 
-class CategoryReminderViewModel : ViewModel() {
+
+class CategoryReminderViewModel(
+    private val categoryId: Long,
+    private val reminderRepository: ReminderRepository = Graph.reminderRepository
+) : ViewModel() {
     private val _state = MutableStateFlow(CategoryReminderViewState())
     val state: StateFlow<CategoryReminderViewState>
         get() = _state
 
     init {
-        val list = mutableListOf<Reminder>()
-        for (x in 1..20) {
-            list.add(
-                Reminder(
-                    reminderId = x.toLong(),
-                    reminderTitle = "$x reminder",
-                    reminderCategory = "Thing",
-                    reminderDate = Date()
-                )
-            )
-        }
-
         viewModelScope.launch {
-            _state.value = CategoryReminderViewState(
-                reminders = list
-            )
+            reminderRepository.remindersInCategory(categoryId).collect { list ->
+                _state.value = CategoryReminderViewState(
+                    reminders = list
+                )
+            }
         }
     }
 }
 
 data class CategoryReminderViewState(
-    val reminders: List<Reminder> = emptyList()
+    val reminders: List<ReminderToCategory> = emptyList()
 )

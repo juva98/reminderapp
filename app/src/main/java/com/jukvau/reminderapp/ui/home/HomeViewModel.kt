@@ -2,11 +2,15 @@ package com.jukvau.reminderapp.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.jukvau.reminderapp.Graph
 import com.jukvau.reminderapp.data.entity.Category
+import com.jukvau.reminderapp.data.repository.CategoryRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-class HomeViewModel : ViewModel() {
+class HomeViewModel(
+    private val categoryRepository: CategoryRepository = Graph.categoryRepository
+) : ViewModel() {
     private val _state = MutableStateFlow(HomeViewState())
     private val _selectedCategory = MutableStateFlow<Category?>(null)
 
@@ -18,27 +22,12 @@ class HomeViewModel : ViewModel() {
     }
 
     init {
-        val categories = MutableStateFlow<List<Category>>(
-            mutableListOf(
-                Category(1, "Thing 1"),
-                Category(2, "Thing 2"),
-                Category(3, "Thing 3"),
-                Category(4, "Thing 4"),
-                Category(5, "Thing 5"),
-                Category(6, "Thing 6"),
-                Category(7, "Thing 7"),
-                Category(8, "Thing 8"),
-                Category(9, "Thing 9"),
-                Category(10, "Thing 10"),
-                Category(11, "Thing 11"),
-            )
-        )
-
         viewModelScope.launch {
+
             combine(
-                categories.onEach { category ->
-                    if (categories.value.isNotEmpty() && _selectedCategory.value == null) {
-                        _selectedCategory.value = category[0]
+                categoryRepository.categories().onEach { list ->
+                    if (list.isNotEmpty() && _selectedCategory.value == null) {
+                        _selectedCategory.value = list[0]
                     }
                 },
                 _selectedCategory
@@ -48,6 +37,27 @@ class HomeViewModel : ViewModel() {
                     selectedCategory = selectedCategory
                 )
             }.collect { _state.value = it }
+        }
+
+        loadCategoriesFromDb()
+    }
+
+    private fun loadCategoriesFromDb() {
+        val list = mutableListOf(
+            Category(name = "Reminder"),
+            Category(name = "To-do"),
+            Category(name = "Urgent"),
+            Category(name = "Seen")
+//            Category(name = "Thing 5"),
+//            Category(name = "Thing 6"),
+//            Category(name = "Thing 7"),
+//            Category(name = "Thing 8"),
+//            Category(name = "Thing 9"),
+//            Category(name = "Thing 10"),
+//            Category(name = "Thing 11")
+        )
+        viewModelScope.launch {
+            list.forEach { category -> categoryRepository.addCategory(category) }
         }
     }
 }

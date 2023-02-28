@@ -81,7 +81,9 @@ fun HomeContent(
             )
 
             CategoryReminder(
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                categoryId = selectedCategory.id,
+                navController = navController
             )
         }
     }

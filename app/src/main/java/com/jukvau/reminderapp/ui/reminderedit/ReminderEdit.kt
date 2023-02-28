@@ -19,12 +19,16 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jukvau.reminderapp.data.entity.Category
+import com.jukvau.reminderapp.data.entity.Reminder
+import com.jukvau.reminderapp.data.room.CategoryDao
+import com.jukvau.reminderapp.data.room.ReminderDao
 import kotlinx.coroutines.launch
 import java.util.*
 import com.jukvau.reminderapp.datastore.StoreUserData
+import com.jukvau.reminderapp.ui.home.categoryReminder.CategoryReminder
 
 @Composable
-fun Reminder(
+fun ReminderEdit(
     onBackPress: () -> Unit,
     viewModel: ReminderViewModel = viewModel()
 ) {
@@ -35,12 +39,10 @@ fun Reminder(
     val coroutineScope = rememberCoroutineScope()
     val message = rememberSaveable { mutableStateOf("") }
     val category = rememberSaveable { mutableStateOf("") }
-//    val stuff = rememberSaveable { mutableStateOf("") }
-//    val stuff2 = rememberSaveable { mutableStateOf("") }
     val timeH = rememberSaveable { mutableStateOf("") }
     val timeM = rememberSaveable { mutableStateOf("") }
     val timeS = rememberSaveable { mutableStateOf("") }
-
+    val reminder_id: Long = 0
 
     Surface {
         Column(
@@ -90,7 +92,9 @@ fun Reminder(
                 )
                 Spacer(modifier = Modifier.height(10.dp))
                 Row(
-                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     OutlinedTextField(
@@ -98,7 +102,9 @@ fun Reminder(
                         onValueChange = { timeH.value = it },
                         label = { Text(text = "Hours") },
                         shape = RoundedCornerShape(corner = CornerSize(50.dp)),
-                        modifier = Modifier.weight(1f).padding(end = 8.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 8.dp),
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Number
                         )
@@ -131,78 +137,17 @@ fun Reminder(
 
                 }
 
-//                OutlinedTextField(
-//                    modifier = Modifier.fillMaxWidth(),
-//                    value = "",
-//                    onValueChange = {},
-//                    label = { Text(text = "Something") },
-//                    shape = RoundedCornerShape(corner = CornerSize(50.dp))
-//                )
-//                Spacer(modifier = Modifier.width(10.dp))
-//                Row{
-//                    OutlinedTextField(
-//                        value = "",
-//                        onValueChange = {},
-//                        label = { Text(text = "Date") },
-//                        shape = RoundedCornerShape(corner = CornerSize(50.dp))
-//                    )
-//                    Spacer(modifier = Modifier.width(10.dp))
-//                    OutlinedTextField(
-//                        value = "",
-//                        onValueChange = {},
-//                        label = { Text(text = "Stuff") },
-//                        shape = RoundedCornerShape(corner = CornerSize(50.dp))
-//                    )
-//                    Spacer(modifier = Modifier.height(10.dp))
-//                Spacer(modifier = Modifier.height(10.dp))
-//                Row(
-//                    modifier = Modifier.weight(1f),
-//                    horizontalArrangement = Arrangement.SpaceBetween
-//                ) {
-//                    OutlinedTextField(
-//                        value = stuff.value,
-//                        onValueChange = { stuff.value = it },
-//                        label = { Text(text = "Location X") },
-//                        shape = RoundedCornerShape(corner = CornerSize(50.dp)),
-//                        modifier = Modifier.weight(1f).padding(end = 8.dp),
-//                        keyboardOptions = KeyboardOptions(
-//                            keyboardType = KeyboardType.Number
-//                        )
-//                    )
-//
-//                    Spacer(modifier = Modifier.width(10.dp))
-//
-//                    OutlinedTextField(
-//                        value = stuff2.value,
-//                        onValueChange = { stuff2.value = it },
-//                        label = { Text(text = "Location Y") },
-//                        shape = RoundedCornerShape(corner = CornerSize(50.dp)),
-//                        modifier = Modifier.weight(1f),
-//                        keyboardOptions = KeyboardOptions(
-//                            keyboardType = KeyboardType.Number
-//                        )
-//                    )
-//
-//                }
-//                OutlinedTextField(
-//                    value = stuff.value,
-//                    onValueChange = { stuff.value = it },
-//                    label = { Text(text = "Stuff") },
-//                    shape = RoundedCornerShape(corner = CornerSize(50.dp)),
-//                    modifier = Modifier.fillMaxWidth(),
-//                    keyboardOptions = KeyboardOptions(
-//                        keyboardType = KeyboardType.Number
-//                    )
-//                )
+
                 Spacer(modifier = Modifier.height(10.dp))
-//                }
+
                 Spacer(modifier = Modifier.height(10.dp))
                 Button(
                     enabled = true,
                     onClick = {
                         coroutineScope.launch {
-                            viewModel.saveReminder(
+                            viewModel.editReminder(
                                 com.jukvau.reminderapp.data.entity.Reminder(
+                                    reminderId = 0,
                                     reminderMessage = message.value,
                                     reminderX = 0,
                                     reminderY = 0,
@@ -224,7 +169,7 @@ fun Reminder(
                         .size(55.dp),
                     shape = RoundedCornerShape(corner = CornerSize(50.dp))
                 ) {
-                    Text(text = "Save reminder")
+                    Text(text = "Edit reminder")
                 }
             }
         }

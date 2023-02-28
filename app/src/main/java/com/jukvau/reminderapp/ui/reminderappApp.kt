@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.jukvau.reminderapp.datastore.StoreUserData
 import com.jukvau.reminderapp.rememberreminderappAppState
 import com.jukvau.reminderapp.reminderappAppState
 import com.jukvau.reminderapp.ui.help.TutorialScreen
@@ -12,6 +13,7 @@ import com.jukvau.reminderapp.ui.home.Home
 import com.jukvau.reminderapp.ui.login.LoginScreen
 import com.jukvau.reminderapp.ui.profile.ProfileScreen
 import com.jukvau.reminderapp.ui.reminder.Reminder
+import com.jukvau.reminderapp.ui.reminder.ReminderEdit
 
 @Composable
 fun ReminderApp(
@@ -41,6 +43,9 @@ fun ReminderApp(
         }
         composable(route = "help") {
             TutorialScreen(onBackPress = appState::navigateBack)
+        }
+        composable(route = "reminderedit") {
+            ReminderEdit(onBackPress = appState::navigateBack)
         }
     }
 }
