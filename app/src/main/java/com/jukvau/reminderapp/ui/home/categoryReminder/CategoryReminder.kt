@@ -155,7 +155,10 @@ private fun ReminderListItem(
         // icon
 
         IconButton(
-            onClick = { navController.navigate(route = "reminderedit") },
+            onClick = {
+//                val ReminderId = Reminder.reminderId
+                navController.navigate("reminderedit/${reminder.reminderId}")
+            },
             modifier = Modifier
                 .size(50.dp)
                 .padding(6.dp)

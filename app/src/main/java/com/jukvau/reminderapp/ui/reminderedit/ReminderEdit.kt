@@ -17,24 +17,28 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.jukvau.reminderapp.data.entity.Category
 import com.jukvau.reminderapp.data.entity.Reminder
-import com.jukvau.reminderapp.data.room.CategoryDao
 import com.jukvau.reminderapp.data.room.ReminderDao
 import kotlinx.coroutines.launch
 import java.util.*
 import com.jukvau.reminderapp.datastore.StoreUserData
-import com.jukvau.reminderapp.ui.home.categoryReminder.CategoryReminder
+import com.jukvau.reminderapp.ui.reminderedit.ReminderEditViewModel
+import com.jukvau.reminderapp.ui.reminderedit.ReminderEditViewState
 
 @Composable
 fun ReminderEdit(
+//    onBackPress: NavController,
     onBackPress: () -> Unit,
-    viewModel: ReminderViewModel = viewModel()
+    reminderId: String?,
+    navController: NavController,
+    viewModel: ReminderEditViewModel = viewModel(),
+//    reminder: Reminder
+//    reminderDao: ReminderDao
 ) {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    val dataStore = StoreUserData(context)
     val viewState by viewModel.state.collectAsState()
     val coroutineScope = rememberCoroutineScope()
     val message = rememberSaveable { mutableStateOf("") }
@@ -42,7 +46,7 @@ fun ReminderEdit(
     val timeH = rememberSaveable { mutableStateOf("") }
     val timeM = rememberSaveable { mutableStateOf("") }
     val timeS = rememberSaveable { mutableStateOf("") }
-    val reminder_id: Long = 0
+//    val oldreminder = reminderId?.let { viewModel.getReminder(it.toLong()) }
 
     Surface {
         Column(
@@ -86,7 +90,7 @@ fun ReminderEdit(
 //                    )
 //                )
                 Spacer(modifier = Modifier.height(10.dp))
-                CategoryListDropdown(
+                CategoryListDropdown2(
                     viewState = viewState,
                     category = category
                 )
@@ -145,22 +149,24 @@ fun ReminderEdit(
                     enabled = true,
                     onClick = {
                         coroutineScope.launch {
-                            viewModel.editReminder(
-                                com.jukvau.reminderapp.data.entity.Reminder(
-                                    reminderId = 0,
-                                    reminderMessage = message.value,
-                                    reminderX = 0,
-                                    reminderY = 0,
-                                    reminderCreationTime = Date().time,
-                                    reminderCategoryId = getCategoryId(viewState.categories, category.value),
-                                    reminderCreatorId = StoreUserData.USER_ID,
-                                    reminderTime = Date(Date().time
-                                            + timeH.value.toInt() * 60 * 60 * 1000
-                                            + timeM.value.toInt() * 60 * 1000
-                                            + timeS.value.toInt() * 1000).time,
-                                    reminderSeen = false
+                            if (reminderId != null) {
+                                viewModel.editReminder(
+                                    com.jukvau.reminderapp.data.entity.Reminder(
+                                        reminderId = reminderId.toLongOrNull()!!,
+                                        reminderMessage = message.value,
+                                        reminderX = 0,
+                                        reminderY = 0,
+                                        reminderCreationTime = Date().time,
+                                        reminderCategoryId = getCategoryId(viewState.categories, category.value),
+                                        reminderCreatorId = StoreUserData.USER_ID,
+                                        reminderTime = Date(Date().time
+                                                + timeH.value.toInt() * 60 * 60 * 1000
+                                                + timeM.value.toInt() * 60 * 1000
+                                                + timeS.value.toInt() * 1000).time,
+                                        reminderSeen = false
+                                    )
                                 )
-                            )
+                            }
                         }
                         onBackPress()
                     },
@@ -171,6 +177,38 @@ fun ReminderEdit(
                 ) {
                     Text(text = "Edit reminder")
                 }
+
+                Spacer(modifier = Modifier.height(10.dp))
+                Button(
+                    enabled = true,
+                    onClick = {
+                        coroutineScope.launch {
+                            if (reminderId != null) {
+                                viewModel.removeReminder(
+                                    com.jukvau.reminderapp.data.entity.Reminder(
+                                        reminderId = reminderId.toLongOrNull()!!,
+                                        reminderMessage = "",
+                                        reminderX = 0,
+                                        reminderY = 0,
+                                        reminderCreationTime = 0,
+                                        reminderCategoryId = 0,
+                                        reminderCreatorId = 0,
+                                        reminderTime = 0,
+                                        reminderSeen = false
+                                    )
+                                )
+                            }
+                        }
+                        onBackPress()
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .size(55.dp),
+                    shape = RoundedCornerShape(corner = CornerSize(50.dp))
+                ) {
+                    Text(text = "Remove reminder")
+                }
+
             }
         }
     }
@@ -181,8 +219,8 @@ private fun getCategoryId(categories: List<Category>, categoryName: String): Lon
 }
 
 @Composable
-private fun CategoryListDropdown(
-    viewState: ReminderViewState,
+private fun CategoryListDropdown2(
+    viewState: ReminderEditViewState,
     category: MutableState<String>
 ) {
     var expanded by remember { mutableStateOf(false) }

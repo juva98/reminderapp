@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
  * data repository for [Reminder] instences
  */
 class ReminderRepository(
-    private val reminderDao: ReminderDao
+    private val reminderDao: ReminderDao,
 ) {
     /**
      * returns flow w/ list of reminders associated with category within given [categoryId]
@@ -23,4 +23,8 @@ class ReminderRepository(
     suspend fun addReminder(reminder: Reminder) = reminderDao.insert(reminder)
 
     suspend fun editReminder(reminder: Reminder) = reminderDao.update(reminder)
+
+    suspend fun removeReminder(reminder: Reminder) = reminderDao.delete(reminder)
+
+    suspend fun getReminder(reminderid: Long) = reminderDao.reminder(reminderid)
 }
