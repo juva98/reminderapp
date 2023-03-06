@@ -180,6 +180,6 @@ private fun Date.formatToString(): String {
     return SimpleDateFormat( "HH:mm:ss", Locale.getDefault()).format(this)
 }
 
-private fun Long.toDateString(): String {
+fun Long.toDateString(): String {
     return SimpleDateFormat( "HH:mm:ss", Locale.getDefault()).format(Date(this))
 }

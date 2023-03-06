@@ -8,7 +8,8 @@ import com.jukvau.reminderapp.data.room.reminderappDatabase
 
 object Graph {
     lateinit var database: reminderappDatabase
-        private set
+
+    lateinit var appContext: Context
 
     val categoryRepository by lazy {
         CategoryRepository(
@@ -23,6 +24,7 @@ object Graph {
     }
 
     fun provide(context: Context) {
+        appContext = context
         database = Room.databaseBuilder(context, reminderappDatabase::class.java, "data.db")
             .fallbackToDestructiveMigration()
             .build()
