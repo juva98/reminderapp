@@ -29,21 +29,25 @@ class NotificationWorker(
 //        }
         val data = inputData
         val reminderMessage = data.getString("message")
+        val reminder_Category = data.getLong("category", 0L)
 //        val reminderDelay = data.getLong("delay", 0L)
-        showReminderNotification(reminderMessage)
+        showReminderNotification(reminderMessage, reminder_Category)
         return Result.success()
     }
 
-    fun showReminderNotification(reminder_message: String?) {
+    fun showReminderNotification(reminder_message: String?, reminder_category: Long): Result {
         val notificationId = 4
+        val success = 1
         val builder = NotificationCompat.Builder(Graph.appContext, "CHANNEL_ID")
             .setSmallIcon(R.drawable.ic_launcher_background)
             .setContentTitle("Reminder")
-            .setContentText(reminder_message)
+//            .setContentText(reminder_message)
+            .setContentText(reminder_category.toString())
             .setPriority(NotificationCompat.PRIORITY_HIGH)
         with(NotificationManagerCompat.from(Graph.appContext)) {
             notify(notificationId, builder.build())
         }
+        return Result.success()
     }
 
 }

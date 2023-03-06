@@ -33,7 +33,7 @@ data class Reminder(
     @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "id") val reminderId: Long = 0,
     @ColumnInfo(name = "reminder_message") val reminderMessage: String,
     @ColumnInfo(name = "reminder_creation_time") val reminderCreationTime: Long,
-    @ColumnInfo(name = "reminder_category_id") val reminderCategoryId: Long,
+    @ColumnInfo(name = "reminder_category_id") var reminderCategoryId: Long,
     @ColumnInfo(name = "reminder_creator_id") val reminderCreatorId: Int,
     @ColumnInfo(name = "reminder_x") val reminderX: Int,
     @ColumnInfo(name = "reminder_y") val reminderY: Int,
