@@ -85,19 +85,19 @@ class ReminderViewModel(
         workManager.getWorkInfoByIdLiveData(reminderWorkRequest.id)
             .observeForever { workInfo ->
                 if (workInfo.state == WorkInfo.State.SUCCEEDED) {
-                    reminder.reminderCategoryId = 1
+                    reminder.reminderCategoryId = 1.toLong()
                     createSuccessNotification(reminder)
-//                    reminder.reminderCategoryId = 1
-//                successcheck = 1
+
                     viewModelScope.launch {
 //                        reminder.reminderCategoryId = 1
-//                        editReminder(reminder)
-                        changeReminderCategory(reminder)
-                        createNotificationChannel(context = Graph.appContext)
-                        categoryRepository.categories().collect { categories ->
-                            _state.value = ReminderViewState(categories)
-                        }
-//                        return@launch reminderRepository.editReminder(reminder)
+                        createErrorNotification()
+                        editReminder(reminder)
+//                        changeReminderCategory(reminder)
+//                        createNotificationChannel(context = Graph.appContext)
+//                        categoryRepository.categories().collect { categories ->
+//                            _state.value = ReminderViewState(categories)
+//                        }
+////                        return@launch reminderRepository.editReminder(reminder)
                     }
                 }
             }
@@ -106,7 +106,7 @@ class ReminderViewModel(
 
     suspend fun changeReminderCategory(reminder: Reminder) {
 //        val reminderRepository: ReminderRepository = Graph.reminderRepository
-        reminder.reminderCategoryId = 1
+//        reminder.reminderCategoryId = 1
         editReminder(reminder)
         createSuccessNotification(reminder)
 

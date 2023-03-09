@@ -29,13 +29,13 @@ class NotificationWorker(
 //        }
         val data = inputData
         val reminderMessage = data.getString("message")
-        val reminder_Category = data.getLong("category", 0L)
+        val reminderCategory = data.getLong("category", 0L)
 //        val reminderDelay = data.getLong("delay", 0L)
-        showReminderNotification(reminderMessage, reminder_Category)
+        showReminderNotification(reminderMessage, reminderCategory)
         return Result.success()
     }
 
-    fun showReminderNotification(reminder_message: String?, reminder_category: Long): Result {
+    private fun showReminderNotification(reminder_message: String?, reminder_category: Long): Result {
         val notificationId = 4
         val success = 1
         val builder = NotificationCompat.Builder(Graph.appContext, "CHANNEL_ID")

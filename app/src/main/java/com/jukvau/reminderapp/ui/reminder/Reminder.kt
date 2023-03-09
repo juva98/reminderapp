@@ -35,11 +35,12 @@ fun Reminder(
     val coroutineScope = rememberCoroutineScope()
     val message = rememberSaveable { mutableStateOf("") }
     val category = rememberSaveable { mutableStateOf("") }
-//    val stuff = rememberSaveable { mutableStateOf("") }
-//    val stuff2 = rememberSaveable { mutableStateOf("") }
     val timeH = rememberSaveable { mutableStateOf("") }
     val timeM = rememberSaveable { mutableStateOf("") }
     val timeS = rememberSaveable { mutableStateOf("") }
+    val reminderTimed = remember{mutableStateOf(false)}
+//    var remindercategory = 0L
+//    var remindertime = 0L
 
 
     Surface {
@@ -72,17 +73,7 @@ fun Reminder(
                     label = { Text(text = "Reminder message") },
                     shape = RoundedCornerShape(corner = CornerSize(50.dp))
                 )
-//                Spacer(modifier = Modifier.height(10.dp))
-//                OutlinedTextField(
-//                    modifier = Modifier.fillMaxWidth(),
-//                    value = time.value,
-//                    onValueChange = { time.value = it },
-//                    label = { Text(text = "Hours to reminder") },
-//                    shape = RoundedCornerShape(corner = CornerSize(50.dp)),
-//                    keyboardOptions = KeyboardOptions(
-//                        keyboardType = KeyboardType.Number
-//                    )
-//                )
+
                 Spacer(modifier = Modifier.height(10.dp))
                 CategoryListDropdown(
                     viewState = viewState,
@@ -131,75 +122,20 @@ fun Reminder(
 
                 }
 
-//                OutlinedTextField(
-//                    modifier = Modifier.fillMaxWidth(),
-//                    value = "",
-//                    onValueChange = {},
-//                    label = { Text(text = "Something") },
-//                    shape = RoundedCornerShape(corner = CornerSize(50.dp))
-//                )
-//                Spacer(modifier = Modifier.width(10.dp))
-//                Row{
-//                    OutlinedTextField(
-//                        value = "",
-//                        onValueChange = {},
-//                        label = { Text(text = "Date") },
-//                        shape = RoundedCornerShape(corner = CornerSize(50.dp))
-//                    )
-//                    Spacer(modifier = Modifier.width(10.dp))
-//                    OutlinedTextField(
-//                        value = "",
-//                        onValueChange = {},
-//                        label = { Text(text = "Stuff") },
-//                        shape = RoundedCornerShape(corner = CornerSize(50.dp))
-//                    )
-//                    Spacer(modifier = Modifier.height(10.dp))
-//                Spacer(modifier = Modifier.height(10.dp))
-//                Row(
-//                    modifier = Modifier.weight(1f),
-//                    horizontalArrangement = Arrangement.SpaceBetween
-//                ) {
-//                    OutlinedTextField(
-//                        value = stuff.value,
-//                        onValueChange = { stuff.value = it },
-//                        label = { Text(text = "Location X") },
-//                        shape = RoundedCornerShape(corner = CornerSize(50.dp)),
-//                        modifier = Modifier.weight(1f).padding(end = 8.dp),
-//                        keyboardOptions = KeyboardOptions(
-//                            keyboardType = KeyboardType.Number
-//                        )
-//                    )
-//
-//                    Spacer(modifier = Modifier.width(10.dp))
-//
-//                    OutlinedTextField(
-//                        value = stuff2.value,
-//                        onValueChange = { stuff2.value = it },
-//                        label = { Text(text = "Location Y") },
-//                        shape = RoundedCornerShape(corner = CornerSize(50.dp)),
-//                        modifier = Modifier.weight(1f),
-//                        keyboardOptions = KeyboardOptions(
-//                            keyboardType = KeyboardType.Number
-//                        )
-//                    )
-//
-//                }
-//                OutlinedTextField(
-//                    value = stuff.value,
-//                    onValueChange = { stuff.value = it },
-//                    label = { Text(text = "Stuff") },
-//                    shape = RoundedCornerShape(corner = CornerSize(50.dp)),
-//                    modifier = Modifier.fillMaxWidth(),
-//                    keyboardOptions = KeyboardOptions(
-//                        keyboardType = KeyboardType.Number
-//                    )
-//                )
                 Spacer(modifier = Modifier.height(10.dp))
-//                }
+
                 Spacer(modifier = Modifier.height(10.dp))
                 Button(
                     enabled = true,
                     onClick = {
+//                        val remindercategory = getCategoryId(viewState.categories, category.value)
+//                        val remindertime = Date(Date().time
+//                                + timeH.value.toInt() * 60 * 60 * 1000
+//                                + timeM.value.toInt() * 60 * 1000
+//                                + timeS.value.toInt() * 1000).time
+//                        if (remindercategory == 2L) {
+//                            val diff = remindertime - System.currentTimeMillis()
+//                        }
                         coroutineScope.launch {
                             viewModel.saveReminder(
                                 com.jukvau.reminderapp.data.entity.Reminder(
