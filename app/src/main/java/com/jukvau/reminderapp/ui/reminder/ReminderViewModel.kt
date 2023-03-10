@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit
 import androidx.work.*
 import com.jukvau.reminderapp.ui.home.categoryReminder.toDateString
 import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
 
@@ -43,7 +44,7 @@ class ReminderViewModel(
         return reminderRepository.addReminder(reminder)
     }
 
-    suspend fun editReminder(reminder: Reminder): Unit {
+    private suspend fun editReminder(reminder: Reminder): Unit {
         createErrorNotification()
         reminderRepository.editReminder(reminder)
         categoryRepository.categories().collect { categories ->
@@ -63,7 +64,8 @@ class ReminderViewModel(
             }
         }
     }
-    suspend fun showTimedReminderNotification(reminder: Reminder) = coroutineScope {
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private suspend fun showTimedReminderNotification(reminder: Reminder) = coroutineScope {
         val workManager = WorkManager.getInstance(Graph.appContext)
         val currentTime = System.currentTimeMillis()
         val diff = reminder.reminderTime - currentTime
