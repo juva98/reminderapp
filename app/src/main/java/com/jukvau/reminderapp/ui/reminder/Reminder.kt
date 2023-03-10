@@ -1,5 +1,9 @@
 package com.jukvau.reminderapp.ui.reminder
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
+import android.os.Build
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CornerSize
@@ -17,11 +21,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.work.*
+import com.jukvau.reminderapp.Graph
 import com.jukvau.reminderapp.data.entity.Category
+import com.jukvau.reminderapp.data.entity.Reminder
 import kotlinx.coroutines.launch
 import java.util.*
 import com.jukvau.reminderapp.datastore.StoreUserData
+import com.jukvau.reminderapp.util.NotificationWorker
+import kotlinx.coroutines.coroutineScope
+import java.util.concurrent.TimeUnit
 
 @Composable
 fun Reminder(
@@ -128,13 +139,68 @@ fun Reminder(
                 Button(
                     enabled = true,
                     onClick = {
+//                        createNotificationChannel2(context = Graph.appContext)
 //                        val remindercategory = getCategoryId(viewState.categories, category.value)
+//                        val remindercreationtime = Date().time
 //                        val remindertime = Date(Date().time
 //                                + timeH.value.toInt() * 60 * 60 * 1000
 //                                + timeM.value.toInt() * 60 * 1000
 //                                + timeS.value.toInt() * 1000).time
 //                        if (remindercategory == 2L) {
 //                            val diff = remindertime - System.currentTimeMillis()
+//
+//                            timedReminder(diff)
+//
+//                            val workManager = WorkManager.getInstance(Graph.appContext)
+//                            val constraints = Constraints.Builder()
+//                                .setRequiredNetworkType(NetworkType.CONNECTED)
+//                                .build()
+//
+//                            val notificationWorker = OneTimeWorkRequestBuilder<NotificationWorker>()
+//                                .setInitialDelay(diff, TimeUnit.MILLISECONDS)
+//                                .setConstraints(constraints)
+//                                .build()
+//
+//                            workManager.enqueue(notificationWorker)
+//
+//                            //Monitoring for state of work
+//                            workManager.getWorkInfoByIdLiveData(notificationWorker.id)
+//                                .observeForever { workInfo ->
+//                                    if (workInfo.state == WorkInfo.State.SUCCEEDED) {
+//                                        coroutineScope.launch {
+//                                    viewModel.showTimedReminderNotification(
+//                                        com.jukvau.reminderapp.data.entity.Reminder(
+//                                            reminderMessage = message.value,
+//                                            reminderX = 0,
+//                                            reminderY = 0,
+//                                            reminderCreationTime = remindercreationtime,
+//                                            reminderCategoryId = remindercategory,
+//                                            reminderCreatorId = StoreUserData.USER_ID,
+//                                            reminderTime = remindertime,
+//                                            reminderSeen = true
+//                                    )
+//                                )
+//                            }
+//                                    }
+//                                }
+//
+////                            coroutineScope.launch {
+////                                viewModel.showTimedReminderNotification(
+////                                    com.jukvau.reminderapp.data.entity.Reminder(
+////                                        reminderMessage = message.value,
+////                                        reminderX = 0,
+////                                        reminderY = 0,
+////                                        reminderCreationTime = Date().time,
+////                                        reminderCategoryId = getCategoryId(viewState.categories, category.value),
+////                                        reminderCreatorId = StoreUserData.USER_ID,
+////                                        reminderTime = Date(Date().time
+////                                                + timeH.value.toInt() * 60 * 60 * 1000
+////                                                + timeM.value.toInt() * 60 * 1000
+////                                                + timeS.value.toInt() * 1000).time,
+////                                        reminderSeen = false
+////                                    )
+////                                )
+////                            }
 //                        }
                         coroutineScope.launch {
                             viewModel.saveReminder(
@@ -215,4 +281,42 @@ private fun CategoryListDropdown(
             }
         }
     }
+}
+
+fun createNotificationChannel2(context: Context) {
+    // Create the NotificationChannel, but only on API 26+ because
+    // the NotificationChannel class is new and not in the support library
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val name = "NotificationChannelName"
+        val descriptionText = "NotificationChannelDescriptionText"
+        val importance = NotificationManager.IMPORTANCE_DEFAULT
+        val channel = NotificationChannel("CHANNEL_ID", name, importance).apply {
+            description = descriptionText
+        }
+        // register the channel with the system
+        val notificationManager: NotificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.createNotificationChannel(channel)
+    }
+}
+
+private fun timedReminder(delay: Long) {
+    val workManager = WorkManager.getInstance(Graph.appContext)
+    val constraints = Constraints.Builder()
+        .setRequiredNetworkType(NetworkType.CONNECTED)
+        .build()
+
+    val notificationWorker = OneTimeWorkRequestBuilder<NotificationWorker>()
+        .setInitialDelay(delay, TimeUnit.MILLISECONDS)
+        .setConstraints(constraints)
+        .build()
+
+    workManager.enqueue(notificationWorker)
+
+//Monitoring for state of work (jos ei toimi, kommentoi pois tms)
+    workManager.getWorkInfoByIdLiveData(notificationWorker.id)
+        .observeForever { workInfo ->
+            if (workInfo.state == WorkInfo.State.SUCCEEDED) {
+
+            }
+        }
 }

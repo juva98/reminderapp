@@ -38,5 +38,5 @@ data class Reminder(
     @ColumnInfo(name = "reminder_x") val reminderX: Int,
     @ColumnInfo(name = "reminder_y") val reminderY: Int,
     @ColumnInfo(name = "reminder_time") val reminderTime: Long,
-    @ColumnInfo(name = "reminder_seen") val reminderSeen: Boolean,
+    @ColumnInfo(name = "reminder_seen") var reminderSeen: Boolean,
 )

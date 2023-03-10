@@ -4,7 +4,6 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
-import android.os.WorkSource
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.ViewModel
@@ -18,15 +17,13 @@ import com.jukvau.reminderapp.data.repository.ReminderRepository
 import com.jukvau.reminderapp.util.NotificationWorker
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
-import androidx.core.app.NotificationManagerCompat.from
 import androidx.work.*
 import com.jukvau.reminderapp.ui.home.categoryReminder.toDateString
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
-import java.util.*
+import kotlinx.coroutines.flow.first
 
 class ReminderViewModel(
     private val reminderRepository: ReminderRepository = Graph.reminderRepository,
@@ -47,27 +44,32 @@ class ReminderViewModel(
     }
 
     suspend fun editReminder(reminder: Reminder): Unit {
-        return reminderRepository.editReminder(reminder)
+        createErrorNotification()
+        reminderRepository.editReminder(reminder)
+        categoryRepository.categories().collect { categories ->
+            _state.value = ReminderViewState(categories)
+        }
+    }
+
+    suspend fun removeReminder(reminder: Reminder): Int {
+        return reminderRepository.removeReminder(reminder)
     }
 
     init {
         createNotificationChannel(context = Graph.appContext)
-//        setOneTimeNotification()
         viewModelScope.launch {
             categoryRepository.categories().collect { categories ->
                 _state.value = ReminderViewState(categories)
             }
         }
     }
-    private suspend fun showTimedReminderNotification(reminder: Reminder) = coroutineScope {
-//        val reminderRepository: ReminderRepository = Graph.reminderRepository
+    suspend fun showTimedReminderNotification(reminder: Reminder) = coroutineScope {
         val workManager = WorkManager.getInstance(Graph.appContext)
         val currentTime = System.currentTimeMillis()
         val diff = reminder.reminderTime - currentTime
         val data = Data.Builder()
             .putString("message", reminder.reminderMessage)
             .putLong("category", reminder.reminderCategoryId)
-//        .putLong("delay", diff)
             .build()
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
@@ -78,7 +80,6 @@ class ReminderViewModel(
             .setInputData(data)
             .setConstraints(constraints)
             .build()
-//    var successcheck = 0
 
         workManager.enqueue(reminderWorkRequest)
 
@@ -88,57 +89,59 @@ class ReminderViewModel(
                     reminder.reminderCategoryId = 1.toLong()
                     createSuccessNotification(reminder)
 
-                    viewModelScope.launch {
-//                        reminder.reminderCategoryId = 1
-                        createErrorNotification()
+                    viewModelScope.launch(
+                        start = CoroutineStart.ATOMIC
+                    ) {
+//                        reminder.reminderCategoryId = 1.toLong()
+//                        createErrorNotification()
                         editReminder(reminder)
-//                        changeReminderCategory(reminder)
-//                        createNotificationChannel(context = Graph.appContext)
-//                        categoryRepository.categories().collect { categories ->
-//                            _state.value = ReminderViewState(categories)
-//                        }
-////                        return@launch reminderRepository.editReminder(reminder)
+                        categoryRepository.categories().collect { categories ->
+                            _state.value = ReminderViewState(categories)
+                        }
                     }
                 }
             }
 
     }
 
-    suspend fun changeReminderCategory(reminder: Reminder) {
-//        val reminderRepository: ReminderRepository = Graph.reminderRepository
-//        reminder.reminderCategoryId = 1
-        editReminder(reminder)
-        createSuccessNotification(reminder)
+    private fun createErrorNotification() {
+        val notificationId = 2
+        val builder = NotificationCompat.Builder(Graph.appContext, "CHANNEL_ID")
+            .setSmallIcon(R.drawable.ic_launcher_background)
+            .setContentTitle("checkpoint")
+            .setContentText("coroutinescope works")
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 
+        with(NotificationManagerCompat.from(Graph.appContext)) {
+            //notificationId is unique for each notification that you define
+            notify(notificationId, builder.build())
+        }
+    }
+    private fun createSuccessNotification(reminder: Reminder) {
+        val notificationId = 1
+        val builder = NotificationCompat.Builder(Graph.appContext, "CHANNEL_ID")
+            .setSmallIcon(R.drawable.ic_launcher_background)
+            .setContentTitle("if-statement was passed, new remindercategory:")
+            .setContentText(reminder.reminderCategoryId.toString())
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 
-
+        with(NotificationManagerCompat.from(Graph.appContext)) {
+            //notificationId is unique for each notification that you define
+            notify(notificationId, builder.build())
+        }
+    }
+    private fun createReminderMadeNotification(reminder: Reminder) {
+        val notificationId = 3
+        val builder = NotificationCompat.Builder(Graph.appContext, "CHANNEL_ID")
+            .setSmallIcon(R.drawable.ic_launcher_background)
+            .setContentTitle("New reminder made")
+            .setContentText("${reminder.reminderMessage} at ${reminder.reminderTime.toDateString()}")
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+        with(NotificationManagerCompat.from(Graph.appContext)) {
+            notify(notificationId, builder.build())
+        }
     }
 }
-
-//private fun setOneTimeNotification() {
-//    val workManager = WorkManager.getInstance(Graph.appContext)
-//    val constraints = Constraints.Builder()
-//        .setRequiredNetworkType(NetworkType.CONNECTED)
-//        .build()
-//
-//    val notificationWorker = OneTimeWorkRequestBuilder<NotificationWorker>()
-//        .setInitialDelay(10, TimeUnit.SECONDS)
-//        .setConstraints(constraints)
-//        .build()
-//
-//    workManager.enqueue(notificationWorker)
-
-    //Monitoring for state of work (jos ei toimi, kommentoi pois tms)
-//    workManager.getWorkInfoByIdLiveData(notificationWorker.id)
-//        .observeForever { workInfo ->
-//            if (workInfo.state == WorkInfo.State.SUCCEEDED) {
-//                createSuccessNotification()
-//            }
-//            else {
-//                createErrorNotification()
-//            }
-//        }
-//}
 
 
 
@@ -158,59 +161,6 @@ private fun createNotificationChannel(context: Context) {
     }
 }
 
-private fun createSuccessNotification(reminder: Reminder) {
-    val notificationId = 1
-    val builder = NotificationCompat.Builder(Graph.appContext, "CHANNEL_ID")
-        .setSmallIcon(R.drawable.ic_launcher_background)
-        .setContentTitle("Success! Download Complete")
-        .setContentText(reminder.reminderCategoryId.toString())
-        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-
-    with(NotificationManagerCompat.from(Graph.appContext)) {
-        //notificationId is unique for each notification that you define
-        notify(notificationId, builder.build())
-    }
-}
-
-private fun createErrorNotification() {
-    val notificationId = 2
-    val builder = NotificationCompat.Builder(Graph.appContext, "CHANNEL_ID")
-        .setSmallIcon(R.drawable.ic_launcher_background)
-        .setContentTitle("Not successful :(")
-        .setContentText("Your countdown did not complete successfully")
-        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-
-    with(NotificationManagerCompat.from(Graph.appContext)) {
-        //notificationId is unique for each notification that you define
-        notify(notificationId, builder.build())
-    }
-}
-
-private fun createReminderMadeNotification(reminder: Reminder) {
-    val notificationId = 3
-    val builder = NotificationCompat.Builder(Graph.appContext, "CHANNEL_ID")
-        .setSmallIcon(R.drawable.ic_launcher_background)
-        .setContentTitle("New reminder made")
-        .setContentText("${reminder.reminderMessage} at ${reminder.reminderTime.toDateString()}")
-        .setPriority(NotificationCompat.PRIORITY_HIGH)
-    with(NotificationManagerCompat.from(Graph.appContext)) {
-        notify(notificationId, builder.build())
-    }
-}
-
-private fun showReminderNotification(reminder: Reminder) {
-
-    val notificationId = 5
-//    val diff = reminder.reminderTime - Date().time
-    val builder = NotificationCompat.Builder(Graph.appContext, "CHANNEL_ID")
-        .setSmallIcon(R.drawable.ic_launcher_background)
-        .setContentTitle("Testing")
-        .setContentText(reminder.reminderCategoryId.toString())
-        .setPriority(NotificationCompat.PRIORITY_HIGH)
-    with(NotificationManagerCompat.from(Graph.appContext)) {
-        notify(notificationId, builder.build())
-    }
-}
 data class ReminderViewState(
     val categories: List<Category> = emptyList()
 )

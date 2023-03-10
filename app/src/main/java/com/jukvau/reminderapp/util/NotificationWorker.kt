@@ -35,7 +35,7 @@ class NotificationWorker(
         return Result.success()
     }
 
-    private fun showReminderNotification(reminder_message: String?, reminder_category: Long): Result {
+    private fun showReminderNotification(reminder_message: String?, reminder_category: Long) {
         val notificationId = 4
         val success = 1
         val builder = NotificationCompat.Builder(Graph.appContext, "CHANNEL_ID")
@@ -47,7 +47,7 @@ class NotificationWorker(
         with(NotificationManagerCompat.from(Graph.appContext)) {
             notify(notificationId, builder.build())
         }
-        return Result.success()
+//        return Result.success()
     }
 
 }

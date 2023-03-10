@@ -30,7 +30,7 @@ import com.jukvau.reminderapp.ui.reminderedit.ReminderEditViewModel
 import com.jukvau.reminderapp.ui.reminderedit.ReminderEditViewState
 
 @Composable
-fun ReminderEdit(
+public fun ReminderEdit(
 //    onBackPress: NavController,
     onBackPress: () -> Unit,
     reminderId: String?,
