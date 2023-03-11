@@ -21,23 +21,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import androidx.work.*
+import com.google.android.gms.maps.model.LatLng
 import com.jukvau.reminderapp.Graph
 import com.jukvau.reminderapp.data.entity.Category
-import com.jukvau.reminderapp.data.entity.Reminder
 import kotlinx.coroutines.launch
 import java.util.*
 import com.jukvau.reminderapp.datastore.StoreUserData
 import com.jukvau.reminderapp.util.NotificationWorker
-import kotlinx.coroutines.coroutineScope
 import java.util.concurrent.TimeUnit
 
 @Composable
 fun Reminder(
     onBackPress: () -> Unit,
-    viewModel: ReminderViewModel = viewModel()
+    viewModel: ReminderViewModel = viewModel(),
+    navController: NavController
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -50,6 +50,15 @@ fun Reminder(
     val timeM = rememberSaveable { mutableStateOf("") }
     val timeS = rememberSaveable { mutableStateOf("") }
     val reminderTimed = remember{mutableStateOf(false)}
+    var latitude = 0.00
+    var longitude = 0.00
+
+    val latlng = navController
+        .currentBackStackEntry
+        ?.savedStateHandle
+        ?.getLiveData<LatLng>("location_data")
+        ?.value
+
 //    var remindercategory = 0L
 //    var remindertime = 0L
 
@@ -86,13 +95,31 @@ fun Reminder(
                 )
 
                 Spacer(modifier = Modifier.height(10.dp))
+                if (latlng == null) {
+                    OutlinedButton(
+                        onClick = { navController.navigate("map") },
+                        modifier = Modifier.height(55.dp)
+                    ) {
+                        Text(text = "Reminder location")
+                    }
+                } else {
+                    latitude = latlng.latitude
+                    longitude = latlng.longitude
+                    Text(
+                        text = "Lat: ${latlng.latitude}, Lng: ${latlng.longitude}"
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
                 CategoryListDropdown(
                     viewState = viewState,
                     category = category
                 )
                 Spacer(modifier = Modifier.height(10.dp))
                 Row(
-                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     OutlinedTextField(
@@ -100,7 +127,9 @@ fun Reminder(
                         onValueChange = { timeH.value = it },
                         label = { Text(text = "Hours") },
                         shape = RoundedCornerShape(corner = CornerSize(50.dp)),
-                        modifier = Modifier.weight(1f).padding(end = 8.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 8.dp),
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Number
                         )
@@ -139,85 +168,52 @@ fun Reminder(
                 Button(
                     enabled = true,
                     onClick = {
-//                        createNotificationChannel2(context = Graph.appContext)
-//                        val remindercategory = getCategoryId(viewState.categories, category.value)
-//                        val remindercreationtime = Date().time
-//                        val remindertime = Date(Date().time
-//                                + timeH.value.toInt() * 60 * 60 * 1000
-//                                + timeM.value.toInt() * 60 * 1000
-//                                + timeS.value.toInt() * 1000).time
-//                        if (remindercategory == 2L) {
-//                            val diff = remindertime - System.currentTimeMillis()
-//
-//                            timedReminder(diff)
-//
-//                            val workManager = WorkManager.getInstance(Graph.appContext)
-//                            val constraints = Constraints.Builder()
-//                                .setRequiredNetworkType(NetworkType.CONNECTED)
-//                                .build()
-//
-//                            val notificationWorker = OneTimeWorkRequestBuilder<NotificationWorker>()
-//                                .setInitialDelay(diff, TimeUnit.MILLISECONDS)
-//                                .setConstraints(constraints)
-//                                .build()
-//
-//                            workManager.enqueue(notificationWorker)
-//
-//                            //Monitoring for state of work
-//                            workManager.getWorkInfoByIdLiveData(notificationWorker.id)
-//                                .observeForever { workInfo ->
-//                                    if (workInfo.state == WorkInfo.State.SUCCEEDED) {
-//                                        coroutineScope.launch {
-//                                    viewModel.showTimedReminderNotification(
-//                                        com.jukvau.reminderapp.data.entity.Reminder(
-//                                            reminderMessage = message.value,
-//                                            reminderX = 0,
-//                                            reminderY = 0,
-//                                            reminderCreationTime = remindercreationtime,
-//                                            reminderCategoryId = remindercategory,
-//                                            reminderCreatorId = StoreUserData.USER_ID,
-//                                            reminderTime = remindertime,
-//                                            reminderSeen = true
-//                                    )
-//                                )
-//                            }
-//                                    }
-//                                }
-//
-////                            coroutineScope.launch {
-////                                viewModel.showTimedReminderNotification(
-////                                    com.jukvau.reminderapp.data.entity.Reminder(
-////                                        reminderMessage = message.value,
-////                                        reminderX = 0,
-////                                        reminderY = 0,
-////                                        reminderCreationTime = Date().time,
-////                                        reminderCategoryId = getCategoryId(viewState.categories, category.value),
-////                                        reminderCreatorId = StoreUserData.USER_ID,
-////                                        reminderTime = Date(Date().time
-////                                                + timeH.value.toInt() * 60 * 60 * 1000
-////                                                + timeM.value.toInt() * 60 * 1000
-////                                                + timeS.value.toInt() * 1000).time,
-////                                        reminderSeen = false
-////                                    )
-////                                )
-////                            }
-//                        }
                         coroutineScope.launch {
-                            viewModel.saveReminder(
-                                com.jukvau.reminderapp.data.entity.Reminder(
-                                    reminderMessage = message.value,
-                                    reminderX = 0,
-                                    reminderY = 0,
-                                    reminderCreationTime = Date().time,
-                                    reminderCategoryId = getCategoryId(viewState.categories, category.value),
-                                    reminderCreatorId = StoreUserData.USER_ID,
-                                    reminderTime = Date(Date().time
-                                            + timeH.value.toInt() * 60 * 60 * 1000
-                                            + timeM.value.toInt() * 60 * 1000
-                                            + timeS.value.toInt() * 1000).time,
-                                    reminderSeen = false
+                            if (latitude != 0.00) {
+                                viewModel.saveReminder(
+                                    com.jukvau.reminderapp.data.entity.Reminder(
+                                        reminderMessage = message.value,
+                                        reminderX = latitude,
+                                        reminderY = longitude,
+                                        reminderCreationTime = Date().time,
+                                        reminderCategoryId = getCategoryId(
+                                            viewState.categories,
+                                            category.value
+                                        ),
+                                        reminderCreatorId = StoreUserData.USER_ID,
+                                        reminderTime = Date(
+                                            Date().time
+                                                    + timeH.value.toInt() * 60 * 60 * 1000
+                                                    + timeM.value.toInt() * 60 * 1000
+                                                    + timeS.value.toInt() * 1000
+                                        ).time,
+                                        reminderSeen = false
+                                    )
                                 )
-                            )
+                            } else {
+                                if (latitude == 0.00) {
+                                    viewModel.saveReminder(
+                                        com.jukvau.reminderapp.data.entity.Reminder(
+                                            reminderMessage = message.value,
+                                            reminderX = 0.00,
+                                            reminderY = 0.00,
+                                            reminderCreationTime = Date().time,
+                                            reminderCategoryId = getCategoryId(
+                                                viewState.categories,
+                                                category.value
+                                            ),
+                                            reminderCreatorId = StoreUserData.USER_ID,
+                                            reminderTime = Date(
+                                                Date().time
+                                                        + timeH.value.toInt() * 60 * 60 * 1000
+                                                        + timeM.value.toInt() * 60 * 1000
+                                                        + timeS.value.toInt() * 1000
+                                            ).time,
+                                            reminderSeen = false
+                                        )
+                                    )
+                                }
+                            }
                         }
                         onBackPress()
                     },

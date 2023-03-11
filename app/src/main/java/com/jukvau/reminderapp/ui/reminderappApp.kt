@@ -11,6 +11,7 @@ import com.jukvau.reminderapp.reminderappAppState
 import com.jukvau.reminderapp.ui.help.TutorialScreen
 import com.jukvau.reminderapp.ui.home.Home
 import com.jukvau.reminderapp.ui.login.LoginScreen
+import com.jukvau.reminderapp.ui.maps.ReminderLocationMap
 import com.jukvau.reminderapp.ui.profile.ProfileScreen
 import com.jukvau.reminderapp.ui.reminder.Reminder
 import com.jukvau.reminderapp.ui.reminder.ReminderEdit
@@ -37,7 +38,7 @@ fun ReminderApp(
             )
         }
         composable(route = "reminder") {
-            Reminder(onBackPress = appState::navigateBack)
+            Reminder(onBackPress = appState::navigateBack, navController = appState.navController)
         }
         composable(route = "profile") {
             ProfileScreen(onBackPress = appState::navigateBack)
@@ -47,6 +48,10 @@ fun ReminderApp(
         }
         composable("reminderedit/{reminderId}") {
             backStackEntry -> ReminderEdit(onBackPress = appState::navigateBack, backStackEntry.arguments?.getString("reminderId"), navController = appState.navController)
+        }
+
+        composable(route = "map") {
+            ReminderLocationMap(navController = appState.navController)
         }
     }
 }

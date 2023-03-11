@@ -1,7 +1,6 @@
 package com.jukvau.reminderapp.data.entity
 
 import androidx.room.*
-import java.util.*
 
 @Entity(
     tableName = "reminders",
@@ -35,8 +34,8 @@ data class Reminder(
     @ColumnInfo(name = "reminder_creation_time") val reminderCreationTime: Long,
     @ColumnInfo(name = "reminder_category_id") var reminderCategoryId: Long,
     @ColumnInfo(name = "reminder_creator_id") val reminderCreatorId: Int,
-    @ColumnInfo(name = "reminder_x") val reminderX: Int,
-    @ColumnInfo(name = "reminder_y") val reminderY: Int,
+    @ColumnInfo(name = "reminder_x") val reminderX: Double,
+    @ColumnInfo(name = "reminder_y") val reminderY: Double,
     @ColumnInfo(name = "reminder_time") val reminderTime: Long,
     @ColumnInfo(name = "reminder_seen") var reminderSeen: Boolean,
 )

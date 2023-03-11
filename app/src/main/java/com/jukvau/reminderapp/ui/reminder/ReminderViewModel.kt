@@ -123,7 +123,7 @@ class ReminderViewModel(
         val notificationId = 1
         val builder = NotificationCompat.Builder(Graph.appContext, "CHANNEL_ID")
             .setSmallIcon(R.drawable.ic_launcher_background)
-            .setContentTitle("if-statement was passed, new remindercategory:")
+            .setContentTitle("${reminder.reminderX}, ${reminder.reminderY}")
             .setContentText(reminder.reminderCategoryId.toString())
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 

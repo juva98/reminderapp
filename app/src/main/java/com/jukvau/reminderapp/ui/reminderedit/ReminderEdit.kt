@@ -14,15 +14,11 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.jukvau.reminderapp.data.entity.Category
-import com.jukvau.reminderapp.data.entity.Reminder
-import com.jukvau.reminderapp.data.room.ReminderDao
 import kotlinx.coroutines.launch
 import java.util.*
 import com.jukvau.reminderapp.datastore.StoreUserData
@@ -154,8 +150,8 @@ public fun ReminderEdit(
                                     com.jukvau.reminderapp.data.entity.Reminder(
                                         reminderId = reminderId.toLongOrNull()!!,
                                         reminderMessage = message.value,
-                                        reminderX = 0,
-                                        reminderY = 0,
+                                        reminderX = 0.00,
+                                        reminderY = 0.00,
                                         reminderCreationTime = Date().time,
                                         reminderCategoryId = getCategoryId(viewState.categories, category.value),
                                         reminderCreatorId = StoreUserData.USER_ID,
@@ -188,8 +184,8 @@ public fun ReminderEdit(
                                     com.jukvau.reminderapp.data.entity.Reminder(
                                         reminderId = reminderId.toLongOrNull()!!,
                                         reminderMessage = "",
-                                        reminderX = 0,
-                                        reminderY = 0,
+                                        reminderX = 0.00,
+                                        reminderY = 0.00,
                                         reminderCreationTime = 0,
                                         reminderCategoryId = 0,
                                         reminderCreatorId = 0,
