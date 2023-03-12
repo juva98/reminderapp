@@ -20,11 +20,14 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 import androidx.work.*
+import com.jukvau.reminderapp.data.room.ReminderToCategory
 import com.jukvau.reminderapp.ui.home.categoryReminder.toDateString
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlin.random.Random
 
 class ReminderViewModel(
     private val reminderRepository: ReminderRepository = Graph.reminderRepository,
@@ -36,7 +39,7 @@ class ReminderViewModel(
         get() = _state
 
     suspend fun saveReminder(reminder: Reminder): Long {
-        createReminderMadeNotification(reminder)
+//        createReminderMadeNotification(reminder)
         if (reminder.reminderCategoryId == 2L) {
             showTimedReminderNotification(reminder)
 
@@ -54,6 +57,9 @@ class ReminderViewModel(
 
     suspend fun removeReminder(reminder: Reminder): Int {
         return reminderRepository.removeReminder(reminder)
+    }
+    suspend fun getReminder(categoryID: Long): Flow<List<ReminderToCategory>> {
+        return reminderRepository.remindersInCategory(categoryID)
     }
 
     init {
@@ -89,7 +95,8 @@ class ReminderViewModel(
             .observeForever { workInfo ->
                 if (workInfo.state == WorkInfo.State.SUCCEEDED) {
                     reminder.reminderCategoryId = 1.toLong()
-                    createSuccessNotification(reminder)
+//                    createSuccessNotification(reminder)
+
 
                     viewModelScope.launch(
                         start = CoroutineStart.ATOMIC
@@ -97,6 +104,13 @@ class ReminderViewModel(
 //                        reminder.reminderCategoryId = 1.toLong()
 //                        createErrorNotification()
                         editReminder(reminder)
+//                        categoryRepository.categories().collect { categories ->
+//                            _state.value = ReminderViewState(categories)
+//                        }
+                    }
+                    viewModelScope.launch(
+                        start = CoroutineStart.ATOMIC
+                    ) {
                         categoryRepository.categories().collect { categories ->
                             _state.value = ReminderViewState(categories)
                         }
@@ -106,7 +120,7 @@ class ReminderViewModel(
 
     }
 
-    private fun createErrorNotification() {
+    fun createErrorNotification() {
         val notificationId = 2
         val builder = NotificationCompat.Builder(Graph.appContext, "CHANNEL_ID")
             .setSmallIcon(R.drawable.ic_launcher_background)
@@ -119,12 +133,12 @@ class ReminderViewModel(
             notify(notificationId, builder.build())
         }
     }
-    private fun createSuccessNotification(reminder: Reminder) {
-        val notificationId = 1
+    fun createSuccessNotification(reminder: Reminder) {
+        val notificationId = Random.nextInt(501, 1001)
         val builder = NotificationCompat.Builder(Graph.appContext, "CHANNEL_ID")
             .setSmallIcon(R.drawable.ic_launcher_background)
-            .setContentTitle("${reminder.reminderX}, ${reminder.reminderY}")
-            .setContentText(reminder.reminderCategoryId.toString())
+            .setContentTitle("Reminder nearby!")
+            .setContentText(reminder.reminderMessage)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 
         with(NotificationManagerCompat.from(Graph.appContext)) {
@@ -132,12 +146,12 @@ class ReminderViewModel(
             notify(notificationId, builder.build())
         }
     }
-    private fun createReminderMadeNotification(reminder: Reminder) {
-        val notificationId = 3
+    fun createReminderMadeNotification(reminderMSG: String, reminderTM: Long) {
+        val notificationId = Random.nextInt(50, 500)
         val builder = NotificationCompat.Builder(Graph.appContext, "CHANNEL_ID")
             .setSmallIcon(R.drawable.ic_launcher_background)
             .setContentTitle("New reminder made")
-            .setContentText("${reminder.reminderMessage} at ${reminder.reminderTime.toDateString()}")
+            .setContentText("${reminderMSG} at ${reminderTM.toDateString()}")
             .setPriority(NotificationCompat.PRIORITY_HIGH)
         with(NotificationManagerCompat.from(Graph.appContext)) {
             notify(notificationId, builder.build())

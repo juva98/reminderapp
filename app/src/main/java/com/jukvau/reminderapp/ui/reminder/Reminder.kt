@@ -1,9 +1,11 @@
 package com.jukvau.reminderapp.ui.reminder
 
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CornerSize
@@ -27,11 +29,19 @@ import androidx.work.*
 import com.google.android.gms.maps.model.LatLng
 import com.jukvau.reminderapp.Graph
 import com.jukvau.reminderapp.data.entity.Category
+import com.jukvau.reminderapp.data.entity.Reminder
+import com.jukvau.reminderapp.data.repository.ReminderRepository
+import com.jukvau.reminderapp.data.room.ReminderToCategory
+import com.jukvau.reminderapp.data.room.reminderappDatabase
 import kotlinx.coroutines.launch
 import java.util.*
 import com.jukvau.reminderapp.datastore.StoreUserData
 import com.jukvau.reminderapp.util.NotificationWorker
+import kotlinx.coroutines.flow.collect
 import java.util.concurrent.TimeUnit
+import android.location.Location
+
+public var remindersList = mutableListOf<ReminderToCategory>()
 
 @Composable
 fun Reminder(
@@ -44,11 +54,11 @@ fun Reminder(
     val dataStore = StoreUserData(context)
     val viewState by viewModel.state.collectAsState()
     val coroutineScope = rememberCoroutineScope()
-    val message = rememberSaveable { mutableStateOf("") }
+    val message = rememberSaveable { mutableStateOf("No title") }
     val category = rememberSaveable { mutableStateOf("") }
-    val timeH = rememberSaveable { mutableStateOf("") }
-    val timeM = rememberSaveable { mutableStateOf("") }
-    val timeS = rememberSaveable { mutableStateOf("") }
+    val timeH = rememberSaveable { mutableStateOf("0") }
+    val timeM = rememberSaveable { mutableStateOf("0") }
+    val timeS = rememberSaveable { mutableStateOf("0") }
     val reminderTimed = remember{mutableStateOf(false)}
     var latitude = 0.00
     var longitude = 0.00
@@ -62,6 +72,8 @@ fun Reminder(
 //    var remindercategory = 0L
 //    var remindertime = 0L
 
+
+    getAllReminders()
 
     Surface {
         Column(
@@ -190,6 +202,10 @@ fun Reminder(
                                         reminderSeen = false
                                     )
                                 )
+                                viewModel.createReminderMadeNotification(message.value, (Date().time
+                                        + timeH.value.toLong() * 3600000
+                                        + timeM.value.toLong() * 60000
+                                        + timeS.value.toLong() * 1000))
                             } else {
                                 if (latitude == 0.00) {
                                     viewModel.saveReminder(
@@ -212,6 +228,10 @@ fun Reminder(
                                             reminderSeen = false
                                         )
                                     )
+                                    viewModel.createReminderMadeNotification(message.value, (Date().time
+                                            + timeH.value.toLong() * 3600000
+                                            + timeM.value.toLong() * 60000
+                                            + timeS.value.toLong() * 1000))
                                 }
                             }
                         }
@@ -224,6 +244,72 @@ fun Reminder(
                 ) {
                     Text(text = "Save reminder")
                 }
+
+                Spacer(modifier = Modifier.height(10.dp))
+                Button(
+                    enabled = true,
+                    onClick = {
+                        val list = remindersList
+                        var counter = 1
+                        for (rem in list) {
+                            var remlocX = rem.reminder.reminderX
+                            var remlocY = rem.reminder.reminderY
+                            Log.i("fndrem", "found reminder $counter")
+                            Log.i("remlatlng", "$remlocX $remlocY")
+                            counter++
+
+                            var distArray = FloatArray(3)
+                            Location.distanceBetween(latitude, longitude, remlocX, remlocY, distArray)
+                            Log.i("remdist", "${distArray[0]}")
+                            if (distArray[0] <= 1000.000) {
+                                Log.i("distgood", "reminder nearby")
+                                if (rem.reminder.reminderCategoryId == 2L) {
+                                    coroutineScope.launch {
+                                        viewModel.removeReminder(
+                                            com.jukvau.reminderapp.data.entity.Reminder(
+                                                reminderId = rem.reminder.reminderId,
+                                                reminderMessage = rem.reminder.reminderMessage,
+                                                reminderX = remlocX,
+                                                reminderY = remlocY,
+                                                reminderCreationTime = rem.reminder.reminderCreationTime,
+                                                reminderCategoryId = 1.toLong(),
+                                                reminderCreatorId = rem.reminder.reminderCreatorId,
+                                                reminderTime = rem.reminder.reminderTime,
+                                                reminderSeen = false
+                                            )
+                                        )
+                                    }
+
+                                    coroutineScope.launch {
+                                        viewModel.saveReminder(
+                                            com.jukvau.reminderapp.data.entity.Reminder(
+                                                reminderId = rem.reminder.reminderId,
+                                                reminderMessage = rem.reminder.reminderMessage,
+                                                reminderX = 0.00,
+                                                reminderY = 0.00,
+                                                reminderCreationTime = rem.reminder.reminderCreationTime,
+                                                reminderCategoryId = 2.toLong(),
+                                                reminderCreatorId = rem.reminder.reminderCreatorId,
+                                                reminderTime = rem.reminder.reminderTime,
+                                                reminderSeen = true
+                                            )
+                                        )
+                                    }
+                                }
+                                viewModel.createSuccessNotification(rem.reminder)
+                            }
+
+                    }
+                        onBackPress()
+                              },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .size(55.dp),
+                    shape = RoundedCornerShape(corner = CornerSize(50.dp))
+                ) {
+                    Text(text = "Check Location")
+                }
+
             }
         }
     }
@@ -279,6 +365,29 @@ private fun CategoryListDropdown(
     }
 }
 
+@SuppressLint("CoroutineCreationDuringComposition")
+@Composable
+fun getAllReminders(viewModel: ReminderViewModel = viewModel()) {
+    val coroutineScope = rememberCoroutineScope()
+
+    remindersList.clear()
+
+    val reminders = mutableListOf<ReminderToCategory>()
+    coroutineScope.launch {
+        viewModel.getReminder(2.toLong()).collect {reminderToCategoryList ->
+            reminders.addAll(reminderToCategoryList)
+        }
+    }
+    coroutineScope.launch {
+        viewModel.getReminder(1.toLong()).collect {reminderToCategoryList ->
+            reminders.addAll(reminderToCategoryList)
+        }
+    }
+
+    remindersList = reminders
+
+}
+
 fun createNotificationChannel2(context: Context) {
     // Create the NotificationChannel, but only on API 26+ because
     // the NotificationChannel class is new and not in the support library
@@ -295,7 +404,7 @@ fun createNotificationChannel2(context: Context) {
     }
 }
 
-private fun timedReminder(delay: Long) {
+fun timedReminder(delay: Long) {
     val workManager = WorkManager.getInstance(Graph.appContext)
     val constraints = Constraints.Builder()
         .setRequiredNetworkType(NetworkType.CONNECTED)
