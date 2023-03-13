@@ -43,10 +43,10 @@ fun ReminderLocationMap(
                     CameraUpdateFactory.newLatLngZoom(location, 10f)
                 )
 
-                val markerOptions = MarkerOptions()
-                    .title("Welcome to Oulu")
-                    .position(location)
-                map.addMarker(markerOptions)
+//                val markerOptions = MarkerOptions()
+//                    .title("Welcome to Oulu")
+//                    .position(location)
+//                map.addMarker(markerOptions)
 
                 setMapLongClick(map = map, navController = navController)
             }

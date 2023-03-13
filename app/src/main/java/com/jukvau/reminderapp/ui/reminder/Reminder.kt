@@ -54,7 +54,7 @@ fun Reminder(
     val dataStore = StoreUserData(context)
     val viewState by viewModel.state.collectAsState()
     val coroutineScope = rememberCoroutineScope()
-    val message = rememberSaveable { mutableStateOf("No title") }
+    val message = rememberSaveable { mutableStateOf("") }
     val category = rememberSaveable { mutableStateOf("") }
     val timeH = rememberSaveable { mutableStateOf("0") }
     val timeM = rememberSaveable { mutableStateOf("0") }
@@ -261,7 +261,7 @@ fun Reminder(
                             var distArray = FloatArray(3)
                             Location.distanceBetween(latitude, longitude, remlocX, remlocY, distArray)
                             Log.i("remdist", "${distArray[0]}")
-                            if (distArray[0] <= 1000.000) {
+                            if (distArray[0] <= 2000.000) {
                                 Log.i("distgood", "reminder nearby")
                                 if (rem.reminder.reminderCategoryId == 2L) {
                                     coroutineScope.launch {

@@ -31,7 +31,7 @@ class NotificationWorker(
         val reminderMessage = data.getString("message")
         val reminderCategory = data.getLong("category", 0L)
 //        val reminderDelay = data.getLong("delay", 0L)
-        showReminderNotification(reminderMessage, reminderCategory)
+//        showReminderNotification(reminderMessage, reminderCategory)
         return Result.success()
     }
 

@@ -48,7 +48,7 @@ class ReminderViewModel(
     }
 
     private suspend fun editReminder(reminder: Reminder): Unit {
-        createErrorNotification()
+//        createErrorNotification()
         reminderRepository.editReminder(reminder)
         categoryRepository.categories().collect { categories ->
             _state.value = ReminderViewState(categories)
@@ -147,7 +147,7 @@ class ReminderViewModel(
         }
     }
     fun createReminderMadeNotification(reminderMSG: String, reminderTM: Long) {
-        val notificationId = Random.nextInt(50, 500)
+        val notificationId = 7
         val builder = NotificationCompat.Builder(Graph.appContext, "CHANNEL_ID")
             .setSmallIcon(R.drawable.ic_launcher_background)
             .setContentTitle("New reminder made")
