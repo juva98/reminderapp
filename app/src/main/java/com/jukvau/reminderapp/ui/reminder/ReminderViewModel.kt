@@ -47,7 +47,12 @@ class ReminderViewModel(
         return reminderRepository.addReminder(reminder)
     }
 
-    private suspend fun editReminder(reminder: Reminder): Unit {
+    suspend fun showReminder(reminder: Reminder): Long {
+//        createReminderMadeNotification(reminder)
+        return reminderRepository.addReminder(reminder)
+    }
+
+    suspend fun editReminder(reminder: Reminder): Unit {
 //        createErrorNotification()
         reminderRepository.editReminder(reminder)
         categoryRepository.categories().collect { categories ->
@@ -95,18 +100,11 @@ class ReminderViewModel(
             .observeForever { workInfo ->
                 if (workInfo.state == WorkInfo.State.SUCCEEDED) {
                     reminder.reminderCategoryId = 1.toLong()
-//                    createSuccessNotification(reminder)
-
 
                     viewModelScope.launch(
                         start = CoroutineStart.ATOMIC
                     ) {
-//                        reminder.reminderCategoryId = 1.toLong()
-//                        createErrorNotification()
                         editReminder(reminder)
-//                        categoryRepository.categories().collect { categories ->
-//                            _state.value = ReminderViewState(categories)
-//                        }
                     }
                     viewModelScope.launch(
                         start = CoroutineStart.ATOMIC
